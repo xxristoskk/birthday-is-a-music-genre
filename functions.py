@@ -31,6 +31,34 @@ if not token_info:
 
 sp = spotipy.Spotify(auth=token)
 
+## helper functions for pl_creator
+def check_playlist(user, pl_name):
+    for playlist in sp.user_playlists(user)['items']:
+        if pl_name == playlist['name']:
+            return playlist['id']
+        else:
+            return create_playlist(user,pl_name)['id']
+
+def create_playlist(user,name):
+    return sp.user_playlist_create(user,name)
+def search_album(album):
+    return sp.search(q='album:' + album, type='album')
+def add_to_playlist(user, playlist_id, track_id):
+    return sp.user_playlist_add_tracks(user, playlist_id, track_id)
+def get_track_ids(album_id):
+    return sp.album_tracks(album_id)['items'][0]['id']
+def find_artist(artist_name):
+    return sp.search(q='artist:' + artist_name, type='artist')
+
+## Takes in a dictionary,username, and playlist name
+## Returns a playlist with the first track from each album
+def pl_creator(data, user, pl_name):
+    pl_id = check_playlist(user,pl_name)
+    ## Search for albums in the dictionary
+    track_ids = list(data['id'].values())
+    st.write(track_ids)
+    add_to_playlist(user,pl_id,track_ids)
+    return
 
 ####### function to flatten out lists of lists ######
 def flatten_lists(list_of_lists):
@@ -74,20 +102,9 @@ def model_work(artist,song,model):
     except:
         st.write("This song doesn't have audio features available :(")
 
-
 def search_db(data,class_):
     id_list = []
-    inds = np.random.randint(low=0, high=10000, size=15)
-    for i in range(15):
-        id_list.append(data[data['labels']==class_]['id'][i])
+    inds = np.random.randint(low=0, high=10000, size=20)
+    for i in inds:
+        id_list.append(list(data[data['labels']==int(class_)]['id'])[i])
     return id_list
-
-def write_the_results(id_list):
-    r = sp.tracks(id_list)
-    list_of_anames=[x['album'][0]['name'] for x in r['tracks']]
-    list_of_tnames=[x['name'] for x in r['tracks']]
-    loa = flatten_lists(list_of_anames)
-    lot = flatten_lists(list_of_tnames)
-    zipped = list(tup(loa,lot))
-    for item in zipped:
-        st.write(f'"{item[1]}" by {item[0]}')

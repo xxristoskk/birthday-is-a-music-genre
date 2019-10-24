@@ -56,17 +56,23 @@ e_df.dropna(inplace=True)
 e_df[e_df['labels']==6][['labels','genre']][:60]
 e_df.drop(columns='genre',inplace=True)
 
-
+import pickle
 ##### adding labels to e_df #####
 e_df['labels'] = labels
 # pickle.dump(e_df,open('everything_db.pickle','wb'))
 e_df_with_labels = e_df[['labels','id']]
 e = pickle.load(open('everything_db.pickle','rb'))
-# explore = e_df[['labels','genre','energy','danceability','loudness','acousticness']]
-# explore.drop_duplicates(inplace=True)
-# explore[explore['labels']==1][50:100]
-# explore.dropna(inplace=True)
-# explore['labels'].hist()
+e.reset_index(drop=True,inplace=True)
+
+fig = px.histogram(e, x="labels", nbins=20)
+fig.show()
+
+import plotly.express as px
+fig = px.histogram(e, x="labels", color="labels", marginal="rug")
+fig.show()
+
+
+
 km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrumentalness',
                       4:'loudness',5:'speechiness',6:'tempo',7:'valence'},inplace=True)
 km_df.columns

@@ -9,21 +9,23 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import time
 import config
 import numpy as np
+from PIL import Image
 
 ###### load local dataset #####
 data = pickle.load(open('everything_db.pickle','rb'))
-
+data.reset_index(drop=True,inplace=True)
+data.drop_duplicates(inplace=True)
+data.dropna(inplace=True)
 ###### model ######
 model = pickle.load(open('trained_rfc.pickle','rb'))
 ############### classes ##################
 one = 'The weird and intense'
 two = 'Everything Henry Rollins hates'
 three = 'Why am I crying in the club'
-four = 'Soft vibes'
-five = 'Redbull & vodka, please'
+four = 'Just let me chill, damn'
+five = 'Redbull & vodka'
 six = 'Big club energy'
 seven = 'Spacy bassy'
-
 ################### App ####################
 st.title("Genre Explorer")
 st.header("by Xristos Katsaros")
@@ -32,7 +34,7 @@ st.subheader("Generate a category for a song and a list of others in the same ca
 song = st.text_input("Enter a song name","bartier cardi")
 artist = st.text_input("Enter the artist name",'cardi b')
 
-if st.button("Generate"):
+if st.button("Generate the category"):
     f.refresh_token()
     p_class = f.model_work(artist,song,model)
     if p_class == 0:
@@ -43,10 +45,15 @@ if st.button("Generate"):
         st.write(f'This song is categorized as "{three}"')
     elif p_class == 3:
         st.write(f'This song is categorized as "{four}"')
+        image = Image.open('birthday-is-a-music-genre/tenor.png','rb')
+        st.image(image, use_column_width=True,format='PNG')
     elif p_class == 4:
         st.write(f'This song is categorized as "{five}"')
     elif p_class == 5:
         st.write(f'This song is categorized as "{six}"')
     elif p_class == 6:
         st.write(f'This song is categorized as "{seven}"')
-    f.write_the_results(f.search_db(data,p_class))
+
+pl = st.text_input("Enter the name of your playlist")
+if st.button("Generate playlist"):
+    f.pl_creator(data.to_dict(),config.username,pl)
