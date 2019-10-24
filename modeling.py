@@ -42,6 +42,7 @@ scaler = StandardScaler()
 X = scaler.fit_transform(e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']))
 kmeans = KMeans(n_clusters=7,n_init=500,max_iter=1000).fit(X)
 kmeans_pred = kmeans.fit_predict(X)
+pickle.dump(kmeans,open('kmeans_fit.pickle','wb'))
 
 import seaborn as sns
 labels = kmeans.labels_
@@ -53,12 +54,14 @@ e_df.shape
 e_df.drop_duplicates(inplace=True)
 e_df.dropna(inplace=True)
 e_df[e_df['labels']==6][['labels','genre']][:60]
+e_df.drop(columns='genre',inplace=True)
+
 
 ##### adding labels to e_df #####
 e_df['labels'] = labels
-pickle.dump(e_df,open('everything_db.pickle','wb'))
+# pickle.dump(e_df,open('everything_db.pickle','wb'))
 e_df_with_labels = e_df[['labels','id']]
-
+e = pickle.load(open('everything_db.pickle','rb'))
 # explore = e_df[['labels','genre','energy','danceability','loudness','acousticness']]
 # explore.drop_duplicates(inplace=True)
 # explore[explore['labels']==1][50:100]
@@ -68,35 +71,29 @@ km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrument
                       4:'loudness',5:'speechiness',6:'tempo',7:'valence'},inplace=True)
 km_df.columns
 ######## make the heatmap bigger
-plt.tight_layout(.15)
+plt.tight_layout(1)
 sns.heatmap(km_df.groupby('labels').mean(),xticklabels=True,annot=True)
 
-plt.tight_layout(.15)
+plt.tight_layout(1)
 sns.heatmap(km_df.groupby('labels').median(),xticklabels=True,annot=True)
 plt.savefig('label_features.png')
-""" Labeling clusters:
-    0) Its art but it hurts
-    1) Everything Henry Rollins Hates*
-    2) Why am I crying in the club right now
-    3) Soft vibes
-    4) Redbull & Vodka
-    5) Big club energy
-    6) Spacy bassy
-"""
 
-# centers, labels = find_clusters(X, 6, 10)
+# centers, labels = find_clusters(X, 6, 10)6
 fig = plt.figure(figsize=(13,11))
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(X[:,2], X[:, 6], X[:,8], c=labels)
-plt.savefig('energy-insturm-valence2.png')
+ax.scatter(X[:,2], X[:, 3], X[:,7], c=labels)
+plt.savefig('energy-insturm-valence3.png')
 plt.show()
+km_df.shape
+km_df.drop_duplicates(inplace=True)
 
-############## classifing the clusters ##########################
+############## classifing the clusters with random forest ##########################
 target = km_df['labels']
 features = km_df.drop(columns='labels')
-xTrain,xTest,yTrain,yTest = train_test_split(features,target,test_size=.3,random_state=5)
-rfc = RandomForestClassifier(criterion='gini',n_estimators=120,max_depth=5,min_samples_leaf = 0.05)
-rfc.fit(xTrain,yTrain)
+xTrain,xTest,yTrain,yTest = train_test_split(features,target,test_size=.3)
+# rfc = RandomForestClassifier(n_estimators=1000,max_features=3,max_depth=11)
+trained_rfc = RandomForestClassifier(n_estimators=1000,max_features=3,max_depth=11).fit(features,target)
+pickle.dump(trained_rfc,open('trained_rfc.pickle','wb'))
 rfc_pred = rfc.predict(xTest)
 
 ###### scores ######
@@ -105,3 +102,33 @@ f1_score(yTest,rfc_pred,average='weighted')
 precision_score(yTest,rfc_pred,average='weighted')
 accuracy_score(yTest,rfc_pred)
 confusion_matrix(yTest,rfc_pred)
+
+from sklearn.model_selection import GridSearchCV
+def grid_search(xTrain,xTest,yTrain,yTest):
+    gs = GridSearchCV(estimator=RandomForestClassifier(),
+                     param_grid={'max_depth': [3,8,11],
+                                 'n_estimators': (25,50,75,100,500,1000),
+                                 'max_features': (1,3,5,7)},
+                     cv=4,n_jobs=-1,scoring='balanced_accuracy')
+    model = gs.fit(xTrain,yTrain)
+    print(f'Best score: {model.best_score_}')
+    print(f'Best parms: {model.best_params_}')
+
+grid_search(xTrain,xTest,yTrain,yTest)
+
+"""
+GridSearch results
+Best score: 0.9292720520606348
+Best parms: {'max_depth': 11, 'max_features': 3, 'n_estimators': 1000}
+"""
+import numpy as np
+def plot_feature_importances(model,X_train):
+    n_features = X_train.shape[1]
+    plt.figure(figsize=(8,8))
+    plt.barh(range(n_features), model.feature_importances_, align='center')
+    plt.yticks(np.arange(n_features), X_train.columns.values)
+    plt.xlabel("Feature importance")
+    plt.ylabel("Feature")
+    plt.savefig('important_features.png')
+
+plot_feature_importances(rfc,xTrain)
