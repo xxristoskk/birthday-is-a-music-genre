@@ -1,7 +1,5 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from sklearn.feature_selection import SelectKBest, chi2
-from sklearn.decomposition import TruncatedSVD
 from sklearn.metrics import accuracy_score, auc, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.metrics.cluster import silhouette_score
 from sklearn.model_selection import train_test_split
@@ -9,65 +7,19 @@ from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
+import pandas as pd
 
-### psudocode for possible recommendation system using the mcmc metropolis algorithm
-""" user input: artists/genres
-    there are two neighbors for each artist/genre
-    randomly generate a proposal genre (do we go left or right)
-    consider the 'population' of the proposal (p) genre and the 'population' of the input (i) genres
-    if p > i, then move to p
-    if p < i, then i - p
-    place the remaining i with p in a 'bag' (maybe a placeholder list) and randomly chose one
-    if the random pick is p, then go to p
-    if the random pick is i, then stay at i
-"""
-# Takes in a dictionary of genres and a list of genres
-# Finds the closest genre neighbors and adds them to a new list (tuned)
-# The tuned list is checked for duplicates and a final list is returned
-def genre_tuner(genre_dict, genres):
-    genre_tuples = []
-    tuned = []
-    final = []
-    for genre in genres:
-        if genre not in dictionary.keys():
-            print('Nothing found')
-        else:
-            genre_tuples.append(sorted(dictionary[genre].items(),key=lambda tup: tup[1],reverse=True)[:10]) # sorts tuples in decsending order
-    for items in genre_tuples:
-        i=50
-        for tup in items:
-            if tup[1] in range(0,i) and tup[0] not in genres:
-                i = tup[1]
-                tuned.append(tup[0])
-    #Checks for duplicates
-    for n in tuned:
-        if n not in final:
-            final.append(n)
-    print(genre_tuples)
-    return final
-
-# Takes in list of releases as dictionaries, along with a list of genres
-# Finds the neighboring genres and if both the neighbors and listed genres are in the releases genre, it is appended to new list
-def curated_data(data, genres):
-    genres = [i.lower() for i in genres]
-    neighbors = genre_tuner(genre_dict_builder(data),genres)
-    new = []
-    for release in data:
-        for neighbor in neighbors:
-            for genre in genres:
-                if neighbor not in release['genres']:
-                    continue
-                elif neighbor in release['genres'] and genre in release['genres']:
-                    new.append(release)
-    new = remove_duplicates(new)
-    return new
+#### bc_data ###
+bcdf = pickle.load(open('/home/xristsos/Documents/nodata/curation_station/bc_feat_df.pickle','rb'))
+bcdf
+######### 166,192 electronic songs
+import pickle
+####### KMEANS on electronic music ########
+# pickle.dump(e_df,open('electronic_dataframeFINAL.pickle','wb'))
+e_df = pickle.load(open('electronic_dataframeFINAL.pickle','rb'))
+e_df = pd.concat([bcdf,e_df])
 
 e_df.shape
-######### 166,192 electronic songs
-####### KMEANS on electronic music ########
-pickle.dump(e_df,open('electronic_dataframeFINAL.pickle','wb'))
-e_df = pickle.load(open('electronic_dataframeFINAL.pickle','rb'))
-e_df.columns
 # Specifying the dataset and initializing variables
 distorsions = []
 
@@ -85,48 +37,53 @@ plt.plot(range(1, 10), distorsions)
 plt.grid(True)
 plt.savefig('elbow curve.png')
 
-X2 = scaler.fit_transform(e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']))
-kmeans = KMeans(n_clusters=7,n_init=500,max_iter=1000).fit(X2)
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X = scaler.fit_transform(e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']))
+kmeans = KMeans(n_clusters=7,n_init=500,max_iter=1000).fit(X)
 kmeans_pred = kmeans.fit_predict(X)
+
 import seaborn as sns
-centroids = kmeans.cluster_centers_
 labels = kmeans.labels_
 
-km_df = pd.DataFrame(X2)
+km_df = pd.DataFrame(X)
 e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']).columns
 km_df['labels'] = labels
+e_df.shape
+e_df.drop_duplicates(inplace=True)
+e_df.dropna(inplace=True)
+e_df[e_df['labels']==6][['labels','genre']][:60]
 
 ##### adding labels to e_df #####
 e_df['labels'] = labels
+pickle.dump(e_df,open('everything_db.pickle','wb'))
 e_df_with_labels = e_df[['labels','id']]
-e_df_with_labels
-pickle.dump(e_df,open('labeled_e_df.pickle','wb'))
-explore = e_df[['labels','genre','energy','danceability','loudness','acousticness']]
-explore.drop_duplicates(inplace=True)
-explore[explore['labels']==1][50:100]
-explore.dropna(inplace=True)
-explore['labels'].hist()
+
+# explore = e_df[['labels','genre','energy','danceability','loudness','acousticness']]
+# explore.drop_duplicates(inplace=True)
+# explore[explore['labels']==1][50:100]
+# explore.dropna(inplace=True)
+# explore['labels'].hist()
 km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrumentalness',
                       4:'loudness',5:'speechiness',6:'tempo',7:'valence'},inplace=True)
 km_df.columns
 ######## make the heatmap bigger
+plt.tight_layout(.15)
+sns.heatmap(km_df.groupby('labels').mean(),xticklabels=True,annot=True)
+
+plt.tight_layout(.15)
 sns.heatmap(km_df.groupby('labels').median(),xticklabels=True,annot=True)
 plt.savefig('label_features.png')
 """ Labeling clusters:
-    0) Mellow bops
-    1) Heavy bops
-    2) Crying on the dancefloor
-    3) Happy on the dancefloor
-    4) Ahhhh I love words!
-    5) Redbull & Vodka
-    6) You're scaring all the bros
+    0) Its art but it hurts
+    1) Everything Henry Rollins Hates*
+    2) Why am I crying in the club right now
+    3) Soft vibes
+    4) Redbull & Vodka
+    5) Big club energy
+    6) Spacy bassy
 """
-km_df.shape
-km_df = pd.DataFrame(X)
-e_df.columns
-km_df['labels'] = labels
-km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrumentalness',
-                      4:'liveness',5:'loudness',6:'speechiness',7:'tempo',8:'valence'},inplace=True)
+
 # centers, labels = find_clusters(X, 6, 10)
 fig = plt.figure(figsize=(13,11))
 ax = fig.add_subplot(111, projection='3d')
@@ -148,12 +105,3 @@ f1_score(yTest,rfc_pred,average='weighted')
 precision_score(yTest,rfc_pred,average='weighted')
 accuracy_score(yTest,rfc_pred)
 confusion_matrix(yTest,rfc_pred)
-
-################## the recommendation engine ######################################
-from surprise import Dataset, Reader
-from surprise import SVD
-from surprise import accuracy
-from surprise.model_selection import cross_validate, train_test_split
-import functions as f
-reader = Reader(rating_scale=(0,1))
-train,test = train_test_split(df,test_size=.2)
