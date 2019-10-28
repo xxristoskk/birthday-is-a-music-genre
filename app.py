@@ -33,10 +33,12 @@ st.subheader("Generate a category for a song and a list of others in the same ca
 
 song = st.text_input("Enter a song name","bartier cardi")
 artist = st.text_input("Enter the artist name",'cardi b')
+# pl = st.text_input("Enter the name of your playlist")
 
 if st.button("Generate the category"):
     f.refresh_token()
     p_class = f.model_work(artist,song,model)
+    # id_list = f.search_db(data,p_class)
     if p_class == 0:
         st.write(f'This song is categorized as "{one}"')
     elif p_class == 1:
@@ -45,15 +47,10 @@ if st.button("Generate the category"):
         st.write(f'This song is categorized as "{three}"')
     elif p_class == 3:
         st.write(f'This song is categorized as "{four}"')
-        image = Image.open('birthday-is-a-music-genre/tenor.png','rb')
-        st.image(image, use_column_width=True,format='PNG')
     elif p_class == 4:
         st.write(f'This song is categorized as "{five}"')
     elif p_class == 5:
         st.write(f'This song is categorized as "{six}"')
     elif p_class == 6:
         st.write(f'This song is categorized as "{seven}"')
-
-pl = st.text_input("Enter the name of your playlist")
-if st.button("Generate playlist"):
-    f.pl_creator(data.to_dict(),config.username,pl)
+    # f.pl_creator(id_list,config.username,pl)

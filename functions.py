@@ -52,11 +52,9 @@ def find_artist(artist_name):
 
 ## Takes in a dictionary,username, and playlist name
 ## Returns a playlist with the first track from each album
-def pl_creator(data, user, pl_name):
+def pl_creator(track_ids, user, pl_name):
     pl_id = check_playlist(user,pl_name)
     ## Search for albums in the dictionary
-    track_ids = list(data['id'].values())
-    st.write(track_ids)
     add_to_playlist(user,pl_id,track_ids)
     return
 
