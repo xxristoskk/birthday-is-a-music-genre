@@ -8,18 +8,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import seaborn as sns
 import pandas as pd
+import pickle
 
 #### bc_data ###
 bcdf = pickle.load(open('/home/xristsos/Documents/nodata/curation_station/bc_feat_df.pickle','rb'))
-bcdf
 ######### 166,192 electronic songs
-import pickle
 ####### KMEANS on electronic music ########
-# pickle.dump(e_df,open('electronic_dataframeFINAL.pickle','wb'))
 e_df = pickle.load(open('electronic_dataframeFINAL.pickle','rb'))
 e_df = pd.concat([bcdf,e_df])
 
-e_df.shape
 # Specifying the dataset and initializing variables
 distorsions = []
 
@@ -44,19 +41,16 @@ kmeans = KMeans(n_clusters=7,n_init=500,max_iter=1000).fit(X)
 kmeans_pred = kmeans.fit_predict(X)
 pickle.dump(kmeans,open('kmeans_fit.pickle','wb'))
 
-import seaborn as sns
 labels = kmeans.labels_
 
 km_df = pd.DataFrame(X)
 e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']).columns
 km_df['labels'] = labels
-e_df.shape
 e_df.drop_duplicates(inplace=True)
 e_df.dropna(inplace=True)
 e_df[e_df['labels']==6][['labels','genre']][:60]
 e_df.drop(columns='genre',inplace=True)
 
-import pickle
 ##### adding labels to e_df #####
 e_df['labels'] = labels
 # pickle.dump(e_df,open('everything_db.pickle','wb'))
@@ -75,22 +69,21 @@ fig.show()
 
 km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrumentalness',
                       4:'loudness',5:'speechiness',6:'tempo',7:'valence'},inplace=True)
-km_df.columns
-######## make the heatmap bigger
-plt.tight_layout(1)
-sns.heatmap(km_df.groupby('labels').mean(),xticklabels=True,annot=True)
+
+
+#### Heatmap that describes the clusters' most prominent features
 
 plt.tight_layout(1)
 sns.heatmap(km_df.groupby('labels').median(),xticklabels=True,annot=True)
 plt.savefig('label_features.png')
 
-# centers, labels = find_clusters(X, 6, 10)6
+## 3D scatterplot of the clusters
 fig = plt.figure(figsize=(13,11))
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(X[:,2], X[:, 3], X[:,7], c=labels)
 plt.savefig('energy-insturm-valence3.png')
 plt.show()
-km_df.shape
+
 km_df.drop_duplicates(inplace=True)
 
 ############## classifing the clusters with random forest ##########################
