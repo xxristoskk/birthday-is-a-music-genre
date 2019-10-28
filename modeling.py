@@ -14,16 +14,25 @@ import pickle
 bcdf = pickle.load(open('/home/xristsos/Documents/nodata/curation_station/bc_feat_df.pickle','rb'))
 ######### 166,192 electronic songs
 ####### KMEANS on electronic music ########
-e_df = pickle.load(open('electronic_dataframeFINAL.pickle','rb'))
-e_df = pd.concat([bcdf,e_df])
+bcdf.acousticness.sort_values()
+e_df = pickle.load(open('/home/xristsos/flatiron/projects/birthday pickles/electronic_dataframeFINAL.pickle','rb'))
+features to axe = time_sig, tempo, mode, liveness, key, acousticness, loudness
+sns.heatmap(e_df.corr())
 
+
+e_df = pd.concat([bcdf,e_df])
+e_df.columns
 # Specifying the dataset and initializing variables
 distorsions = []
+X = e_df.drop(columns=['id','analysis_url','genre','track_href','uri','type','acousticness','loudness','liveness','key','tempo','time_signature','mode'])
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
 
+e_df.drop(columns=['tempo','loudness','acousticness','genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href'],inplace=True)
 # Calculate SSE for different K
 for k in range(1, 10):
     kmeans = KMeans(n_clusters=k, random_state = 10)
-    kmeans.fit(X)
+    kmeans.fit(e_df)
     distorsions.append(kmeans.inertia_)
 
 # Plot values of SSE
@@ -36,9 +45,11 @@ plt.savefig('elbow curve.png')
 
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
-X = scaler.fit_transform(e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']))
-kmeans = KMeans(n_clusters=7,n_init=500,max_iter=1000).fit(X)
-kmeans_pred = kmeans.fit_predict(X)
+X = scaler.fit_transform(e_df.drop(columns=['tempo','loudness','ascousticness','genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href']))
+
+#### too many cluster, 7 was too much too. try 5
+kmeans = KMeans(n_clusters=5,n_init=50,max_iter=100).fit(e_df)
+kmeans_pred = kmeans.fit_predict(e_df)
 pickle.dump(kmeans,open('kmeans_fit.pickle','wb'))
 
 labels = kmeans.labels_
@@ -58,42 +69,39 @@ e_df_with_labels = e_df[['labels','id']]
 e = pickle.load(open('everything_db.pickle','rb'))
 e.reset_index(drop=True,inplace=True)
 
-fig = px.histogram(e, x="labels", nbins=20)
-fig.show()
-
-import plotly.express as px
-fig = px.histogram(e, x="labels", color="labels", marginal="rug")
-fig.show()
-
-
-
+e_df.drop(columns=['genre','key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href'],inplace=True)
+e_df.columns
 km_df.rename(columns={0:'acousticness',1:'danceability',2:'energy',3:'instrumentalness',
                       4:'loudness',5:'speechiness',6:'tempo',7:'valence'},inplace=True)
 
-
+km_df.columns
 #### Heatmap that describes the clusters' most prominent features
-
+e_df.columns
 plt.tight_layout(1)
-sns.heatmap(km_df.groupby('labels').median(),xticklabels=True,annot=True)
+sns.heatmap(e_df.groupby('labels').median(),xticklabels=True,annot=True)
 plt.savefig('label_features.png')
-
+e_df.columns
 ## 3D scatterplot of the clusters
 fig = plt.figure(figsize=(13,11))
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(X[:,2], X[:, 3], X[:,7], c=labels)
+ax.scatter(e_df['energy'], e_df['valence'], e_df['instrumentalness'], c=labels)
 plt.savefig('energy-insturm-valence3.png')
 plt.show()
 
 km_df.drop_duplicates(inplace=True)
-
+import numpy as np
 ############## classifing the clusters with random forest ##########################
-target = km_df['labels']
-features = km_df.drop(columns='labels')
+target = e_df['labels']
+features = e_df.drop(columns='labels')
 xTrain,xTest,yTrain,yTest = train_test_split(features,target,test_size=.3)
+xTrain = scaler.fit_transform(xTrain)
+xTest =  scaler.fit_transform(xTest)
+yTrain =  scaler.fit_transform(np.array(yTrain))
+yTest =  scaler.fit_transform(yTest)
 # rfc = RandomForestClassifier(n_estimators=1000,max_features=3,max_depth=11)
 trained_rfc = RandomForestClassifier(n_estimators=1000,max_features=3,max_depth=11).fit(features,target)
 pickle.dump(trained_rfc,open('trained_rfc.pickle','wb'))
-rfc_pred = rfc.predict(xTest)
+rfc_pred = trained_rfc.predict(xTest)
 
 ###### scores ######
 recall_score(yTest,rfc_pred,average='weighted')
@@ -107,7 +115,7 @@ def grid_search(xTrain,xTest,yTrain,yTest):
     gs = GridSearchCV(estimator=RandomForestClassifier(),
                      param_grid={'max_depth': [3,8,11],
                                  'n_estimators': (25,50,75,100,500,1000),
-                                 'max_features': (1,3,5,7)},
+                                 'max_features': (1,3,5)},
                      cv=4,n_jobs=-1,scoring='balanced_accuracy')
     model = gs.fit(xTrain,yTrain)
     print(f'Best score: {model.best_score_}')
@@ -130,4 +138,4 @@ def plot_feature_importances(model,X_train):
     plt.ylabel("Feature")
     plt.savefig('important_features.png')
 
-plot_feature_importances(rfc,xTrain)
+plot_feature_importances(trained_rfc,xTrain)
