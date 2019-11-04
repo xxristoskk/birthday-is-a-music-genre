@@ -1,5 +1,5 @@
 # birthday-is-a-music-genre
-Sifting through the noise in the electronic music on Spotify
+Sifting through the messiness of genres on Spotify
 
 ## What is this?
 Spotify has over 1,500 genre tags. One of them being "birthday" and another one being "skinhead oi." Why, or how, the latter is in their list is a subject of a completely different project. The purpose of this project is to create a music discovery tool that takes in a song and generates a playlist of x amount of songs that share its audio features. What makes this project standout from others is that the generated playlist will consist of artists in a database of independent and DIY artists which I have been in the process of developing.
