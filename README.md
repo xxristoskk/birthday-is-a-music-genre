@@ -2,7 +2,7 @@
 Sifting through the noise in the electronic music on Spotify
 
 ## What is this?
-Spotify has over 1,500 genre tags. One of them being "birthday" and another one being "skinhead oi." Why, or how, the latter is in their list is a subject of a completely different project. The purpose of this project is to create a music discovery tool that takes in a song and generates a playlist of x amount of songs that share its features. What makes this project standout from others is that the generated playlist will consist of artists in a database of independent and DIY artists which I have been in the process of developing.
+Spotify has over 1,500 genre tags. One of them being "birthday" and another one being "skinhead oi." Why, or how, the latter is in their list is a subject of a completely different project. The purpose of this project is to create a music discovery tool that takes in a song and generates a playlist of x amount of songs that share its audio features. What makes this project standout from others is that the generated playlist will consist of artists in a database of independent and DIY artists which I have been in the process of developing.
 
 ## The approach
 * Scraped artist names and genre info from two blogs and the names of all artists currently on bandcamp.com
@@ -19,3 +19,7 @@ Spotify has over 1,500 genre tags. One of them being "birthday" and another one 
 * I'd like to do more feature engineering and perform my own audio analysis with more objective metrics--find patterns in dynamics and cadence
 * Put together the database of DIY artists
 * Develop a front end (in the curation station repo) for a complete web application that can be used by anyone
+
+## Current status
+* 500k Bandcamp artists are confirmed to be on Spotify and their info is in a MongoDB collection
+* Over 4 million track ID's for all Bandcamp artist and building a new database for model training
