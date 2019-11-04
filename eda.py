@@ -1,146 +1,98 @@
 import pandas as pd
 import json
-# import functions as f
+import functions as f
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
-df = pickle.load(open('this thing.pickle','rb'))
-df['genre'] = 'electronic'
-df.shape
-df1 = pickle.load(open('FINAL_G_FEAT_DF.pickle','rb'))
-df1.shape
-df.drop(columns=['analysis_url','duration_ms','id','mode','track_href','type','uri'],inplace=True)
-df1.drop(columns=['analysis_url','duration_ms','id','mode','track_href','type','uri'],inplace=True)
-df = pd.concat([df,df1])
-df.shape
-# df.isna().sum()
-# df['genre'].nunique()
-# #### 1072 unique genres
-# log = df['genre'].unique()
-# list(log)
-#
-# df.drop_duplicates(inplace=True)
-# df_no_g = df.drop(columns='genre')
-# sns.heatmap(e_df.corr())
-# ##### dropping key since it is not a feature that distinguishes any difference between styles of music
-# # df.drop(columns='key',inplace=True)
-# ##### creating different dataframes for specific genres give a more in tune visualization
-# rock_df = pd.concat([df[df['genre'] == 'metal'],df[df['genre']=='punk'],df[df['genre']=='rock'],df[df['genre']=='blues'],df[df['genre']=='folk'],
-#                      df[df['genre']=='surf'],df[df['genre']=='alternative'],df[df['genre']=='grunge'],df[df['genre']=='post-post-hardcore'],
-#                      df[df['genre']=='hardcore']])
-#
-# rock_df.drop(columns='genre',inplace=True)
-# rock_df.shape
-# rock_df.reset_index(inplace=True,drop=True)
-# df.head()
-#
-# with pd.option_context('display.max_rows', 1000, 'display.max_columns', 5):  # more options can be specified also
-#     print(df)
+######################
+#### NEW DATASET ####
+bc_artist_data = pickle.load(open('new_bc_adata','rb'))
 
-######## electronic dataframe ################
-e_df = pd.concat([
-                           df[df['genre']=='electro'],
-                           df[df['genre']=='idm'],
-                           df[df['genre']=='glitch'],
-                           df[df['genre']=='grime'],
-                           df[df['genre']=='dub techno'],
-                           df[df['genre']=='trap'],
-                           df[df['genre']=='remix'],
-                           df[df['genre']=='lo-fi beats'],
-                           df[df['genre']=='chillhop'],
-                           df[df['genre']=='meme rap'],
-                           df[df['genre']=='underground hip hop'],
-                           df[df['genre']=='bass music'],
-                           df[df['genre']=='moog'],
-                           df[df['genre']=='substep'],
-                           df[df['genre']=='afro house'],
-                           df[df['genre']=='vapor house'],
-                           df[df['genre']=='jersey club'],
-                           df[df['genre']=='rave'],
-                           df[df['genre']=='hard house'],
-                           df[df['genre']=='lo-fi house'],
-                           df[df['genre']=='electra'],
-                           df[df['genre']=='minimal dub'],
-                           df[df['genre']=='experimental techno'],
-                           df[df['genre']=='deep techno'],
-                           df[df['genre']=='electronic'],
-                           df[df['genre']=='techno'],
-                           df[df['genre']=='acid'],
-                           df[df['genre']=='house'],
-                           df[df['genre']=='footwork'],
-                           df[df['genre']=='juke'],
-                           df[df['genre']=='rap'],
-                           df[df['genre']=='vaporwave'],
-                           df[df['genre']=='trance'],
-                           df[df['genre']=='hip hop'],
-                           df[df['genre']=='deep house'],
-                           df[df['genre']=='ambient'],
-                           df[df['genre']=='club'],
-                           df[df['genre']=='breakbeat'],
-                           df[df['genre']=='bass'],
-                           df[df['genre']=='synth pop'],
-                           df[df['genre']=='desi hip hop'],
-                           df[df['genre']=='tamil hip hop'],
-                           df[df['genre']=='drill'],
-                           df[df['genre']=='electropop'],
-                           df[df['genre']=='hopebeat'],
-                           df[df['genre']=='electronica'],
-                           df[df['genre']=='electro dub'],
-                           df[df['genre']=='wonky'],
-                           df[df['genre']=='acid idm'],
-                           df[df['genre']=='west coast rap'],
-                           df[df['genre']=='bass house'],
-                           df[df['genre']=='bass trap'],
-                           df[df['genre']=='brostep'],
-                           df[df['genre']=='chillstep'],
-                           df[df['genre']=='tech house'],
-                           df[df['genre']=='acid techno']
+def get_bc_artist_info(loa):
+    open('new_bc_cnfrm_pt2.pickle','ab')
+    case_list = []
+    bc_dict = {}
+    count = 0
+    for artist in tqdm(loa[266900:]):
+        try:
+            r = f.find_artist(f'"{artist}"')['artists']
+            if len(r['items']) < 1:
+                continue
+            else:
+                r = r['items'][0]
+            bc_dict = {'followers': r['followers']['total'],
+                       'genres': r['genres'],
+                       'id': r['id'],
+                       'artist_name': r['name'],
+                       'popularity': r['popularity'],
+                       'top_trax': f.get_top_tracks(r['id'])}
+            case_list.append(bc_dict)
+            f.refresh_token()
+        except:
+            print('no longer on spotify')
+            f.refresh_token()
+        count +=1
+        if count == 100:
+            pickle.dump(case_list,open('new_bc_cnfrm_pt2.pickle','wb'))
+            case_list = pickle.load(open('new_bc_cnfrm_pt2.pickle','rb'))
+            count = 0
+    return
 
-])
-# df.reset_index(inplace=True,drop=True)
-e_df.isna().sum()
-e_df.shape
-# e_df.drop(columns=['key','genre'],inplace=True)
-e_df.drop(columns='genre',inplace=True)
-############################################
-###########second dataframe ####################
-#################################################
-e_df2 = pickle.load(open('FINAL LIST OF FEATURES FOR ELECTRONIC MUSIC.pickle','rb'))
-len(e_df2)
-for x in e_df2:
-    if x == None:
-        e_df2.remove(x)
-    # if x.keys():
-    #     continue
-    # else:
-    #     e_df2.remove(x)
-len(e_df2)
-e2 = pd.DataFrame(e_df2)
-e2.shape
-e2.isna().sum()
-e2.drop(columns=['analysis_url','duration_ms','id','mode','type','uri','track_href'],inplace=True)
-e_df = pd.concat([e2,e_df])
+get_bc_artist_info(bc_artist_data)
 
-e_df.shape
+############# 500k+ bandcamp artist info ###########
+data = pickle.load(open('bc_dicts_from_spotify.pickle','rb'))
+df = pd.DataFrame(data)
+data[0]
+###### getting all the track ids for audio features ####
+track_ids = []
+for item in data:
+    if len(item['top_trax']) < 1:
+        continue
+    else:
+        track_ids.append(item['top_trax'])
+track_ids = f.flatten_lists(track_ids)
 
-####### scaling all the tempos to be between 60-120 by double or halfing the tempos ######
-# def tempo_classifier(df):
-#     for i,row in df.iterrows():
-#         if row['tempo'] >= 120:
-#             row['tempo'] = row['tempo'] / 2
-#         elif row['tempo'] <= 60:
-#             row['tempo'] = row['tempo'] * 2
-#         else:
-#             continue
-#     return df
+def get_new_feats(trax):
+    feat_data = []
+    counter = 0
+    for track in tqdm(trax):
+        r = f. get_features(track)
+        if len(r) > 1:
+            feat_data.append(r)
+            counter+=1
+        else:
+            continue
+            counter+=1
+        if counter == 50:
+            f.refresh_token()    
+    return feat_data
+
+
+f.get_features(track_ids[0])
+f.refresh_token()
+###### connecting to mongodb #####
+import config
+import pymongo
+from pymongo import MongoClient
+client = MongoClient('mongodb://addy:config.mongo_pw@bc01-shard-00-00-muwwi.gcp.mongodb.net:27017,bc01-shard-00-01-muwwi.gcp.mongodb.net:27017,bc01-shard-00-02-muwwi.gcp.mongodb.net:27017/test?ssl=true&replicaSet=BC01-shard-0&authSource=admin&retryWrites=true&w=majority')
+db = client['BC01']
+collection = db['spotData.bc']
+posts = db.posts
+## inserting data ##
+post_id = posts.insert_many(data)
+
+
 
 ####### scaling ##########
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 X = scaler.fit_transform(e_df)
 e_df.isna().sum()
-###Calculate PCA and plot results
+
+###Perform PCA and plot results
 from sklearn.decomposition import PCA
 pca = PCA(n_components=11)
 pca_data = pca.fit_transform(X)
@@ -162,13 +114,6 @@ ax = fig.add_subplot(111, projection='3d')
 ax.scatter(df_pca[1], df_pca[2], df_pca[3], c='green')
 plt.show()
 
-x##### one-hot encoding #####
-from sklearn.preprocessing import LabelEncoder
-encoder = LabelEncoder()
-labeld_genres = encoder.fit_transform(main_df['genre'])
-main_df['encoded_genres'] = labeld_genres
-encoded_df = main_df.drop(columns=['genre'])
-
 ##### some quick plotting
 import plotly.graph_objects as go
 
@@ -180,12 +125,6 @@ fig.show()
 ##### dropping liveness due to its high correlation with danceability
 df.drop(columns='liveness',inplace=True)
 
-##### interesting stuff i can't look at right now
-fig2 = go.Figure(data=go.Heatmap(
-                   z=df.groupby('genre').mean().corr(),
-                   x=list(df.columns),
-                   y=list(df.columns)))
-fig2.show()
 
 # ###### genre matrix eda ######
 # g_dict = json.load(open('/home/xristsos/flatiron/projects/offsite final/test_genre_dict2.json','r'))
