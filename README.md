@@ -16,10 +16,10 @@ Spotify has over 1,500 genre tags. One of them being "birthday" and another one 
 * The classifier performed great with 93% accuracy, but because of the issue raised above, the content of what was being classified were mislabled 
 
 ## The Future
-* I'd like to do more feature engineering and perform my own audio analysis with more objective metrics--find patterns in dynamics and cadence
-* Put together the database of DIY artists
+* More feature engineering and perform my own audio analysis with more objective metrics--find patterns in dynamics and cadence
+* Perform K-Means clustering analysis on new dataset with a higher number of clusters
 * Develop a front end (in the curation station repo) for a complete web application that can be used by anyone
 
 ## Current status
 * 500k Bandcamp artists are confirmed to be on Spotify and their info is in a MongoDB collection
-* Over 4 million track ID's for all Bandcamp artist and building a new database for model training
+* Over 4 million track ID's for all Bandcamp artist and building a new database of song features and audio analysis for model training
