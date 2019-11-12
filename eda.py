@@ -5,6 +5,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import time
 
 ######################
 #### NEW DATASET ####
@@ -16,25 +17,20 @@ def get_bc_artist_info(loa):
     bc_dict = {}
     count = 0
     for artist in tqdm(loa[266900:]):
-        try:
-            r = f.find_artist(f'"{artist}"')['artists']
-            if len(r['items']) < 1:
-                continue
-            else:
-                r = r['items'][0]
-            bc_dict = {'followers': r['followers']['total'],
-                       'genres': r['genres'],
-                       'id': r['id'],
-                       'artist_name': r['name'],
-                       'popularity': r['popularity'],
-                       'top_trax': f.get_top_tracks(r['id'])}
-            case_list.append(bc_dict)
-            f.refresh_token()
-        except:
-            print('no longer on spotify')
-            f.refresh_token()
-        count +=1
-        if count == 100:
+        r = f.find_artist(f'"{artist}"')['artists']
+        if len(r['items']) < 1:
+            continue
+        else:
+            r = r['items'][0]
+        bc_dict = {'followers': r['followers']['total'],
+                   'genres': r['genres'],
+                   'id': r['id'],
+                   'artist_name': r['name'],
+                   'popularity': r['popularity'],
+                   'top_trax': f.get_top_tracks(r['id'])}
+        case_list.append(bc_dict)
+        f.refresh_token()
+    if count == 25:
             pickle.dump(case_list,open('new_bc_cnfrm_pt2.pickle','wb'))
             case_list = pickle.load(open('new_bc_cnfrm_pt2.pickle','rb'))
             count = 0
@@ -46,6 +42,7 @@ get_bc_artist_info(bc_artist_data)
 data = pickle.load(open('bc_dicts_from_spotify.pickle','rb'))
 df = pd.DataFrame(data)
 data[0]
+
 ###### getting all the track ids for audio features ####
 track_ids = []
 for item in data:
@@ -56,34 +53,100 @@ for item in data:
 track_ids = f.flatten_lists(track_ids)
 
 def get_new_feats(trax):
+    open('songs7.pickle','ab')
     feat_data = []
-    counter = 0
+    dump = 0
     for track in tqdm(trax):
-        r = f. get_features(track)
-        if len(r) > 1:
-            feat_data.append(r)
-            counter+=1
-        else:
+        try:
+            r = f. get_features(track)
+        except:
             continue
-            counter+=1
-        if counter == 50:
-            f.refresh_token()    
-    return feat_data
+        if r != 'None':
+            feat_data.append(r)
+            dump+=1
+        else:
+            dump+=1
+        f.refresh_token()
+        if dump == 25:
+            pickle.dump(feat_data,open('songs7.pickle','wb'))
+            feat_data = pickle.load(open('songs7.pickle','rb'))
+            time.sleep(.25)
+            dump = 0
+    return
 
+###### getting the first 250 ######
+get_new_feats(track_ids[1000000:1500000])
+944776+86300
+l = pickle.load(open('songs7.pickle','rb'))
+len(l)
+###### getting the next 250 #####
+s1 = pickle.load(open('songs.pickle','rb'))
+s2 = pickle.load(open('songs2.pickle','rb'))
+s3 = pickle.load(open('songs3.pickle','rb'))
+s4 = pickle.load(open('songs4.pickle','rb'))
+s5= pickle.load(open('songs5.pickle','rb'))
+s6= pickle.load(open('songs6.pickle','rb'))
+s7= pickle.load(open('songs7.pickle','rb'))
 
-f.get_features(track_ids[0])
-f.refresh_token()
+songs = s1+s2+s3+s4+s5+s6+s7
+songs = f.flatten_lists(songs)
+
+for song in songs:
+    if song == None:
+        songs.remove(song)
+
+af_df = pd.DataFrame(songs)
+
+af_df.info()
+
 ###### connecting to mongodb #####
 import config
 import pymongo
 from pymongo import MongoClient
-client = MongoClient('mongodb://addy:config.mongo_pw@bc01-shard-00-00-muwwi.gcp.mongodb.net:27017,bc01-shard-00-01-muwwi.gcp.mongodb.net:27017,bc01-shard-00-02-muwwi.gcp.mongodb.net:27017/test?ssl=true&replicaSet=BC01-shard-0&authSource=admin&retryWrites=true&w=majority')
-db = client['BC01']
-collection = db['spotData.bc']
-posts = db.posts
-## inserting data ##
-post_id = posts.insert_many(data)
+import dns
 
+client = MongoClient(f'mongodb+srv://xristos:{config.mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
+db = client.BC01
+
+## creating a new collection
+audioFeatures = db['audioFeatures']
+artistInfo = db['artistInfo']
+## inserting data ##
+results_a = audioFeatures.insert_many(songs)
+results_i = artistInfo.insert_many(data)
+db.list_collection_names()
+
+#### newly scraped bc artist info based on genre
+diw2 = pickle.load(open('bc_genre_releases2.pickle','rb'))
+diw3 = pickle.load(open('bc_genre_releases3.pickle','rb'))
+diw1 = pickle.load(open('bc_genre_releases.pickle','rb'))
+all_releases = diw3 + diw2 + diw1
+#### clean and organize scraped data
+l = []
+for item in all_releases:
+    for g,v in item.items():
+        z = list(zip(list(v.keys()),list(v.values())))
+        for x in z:
+            nd = {'genre':g,
+                  'artist':x[0],
+                  'album': x[1]}
+            l.append(nd)
+#### finding all bc artists with no genre info
+artists_with_no_genres = artistInfo.find({'genres':[]},{'artist_name':1})
+
+#### creating a reference list to find out which artists need to be updated in the database
+artist_query = []
+for artist in artists_with_no_genres:
+    artist_query.append(artist['artist_name'])
+
+#### updating each artist with new genre info
+for item in tqdm(l):
+    if item['artist'] in artist_query:
+        artistInfo.update_one({'artist_name': item['artist']},{'$set':{'genres':item['genre']}})
+
+""" the above needs more scraping to be done; there are over 400k artists without genre info (from spotify) and from
+the genre pages i scraped on bandcamp, only around 30k were found. the next step will be to write another scraping script
+which will search for the specific artists on bc and grab the genre tags directly from the artist page """
 
 
 ####### scaling ##########
