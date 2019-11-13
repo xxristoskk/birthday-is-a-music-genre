@@ -92,3 +92,49 @@ for i,tag in enumerate(tags):
         tags[i] = tags[i].replace('/','-')
 
 super_scraper(tags)
+
+### this function takes in a list of artist names (for this project--the ones that are still missing genre info) and automates a browser
+### to search for each artist page and return their bandcamp genre information. after this is done running, each artist will have a genre
+### to their name and i will be able to use the genre info to make more accurate clusters for classifying
+
+def search_and_scrape(artist_names):
+    case = []
+    driver = webdriver.Firefox()
+    for artist in tqdm(artist_names):
+        artist_dict = {}
+        driver.get('https://bandcamp.com/')
+        time.sleep(1.5)
+        ### searching for artist
+        search_box = driver.find_element_by_tag_name('input')
+        search_box.send_keys(artist)
+        search_button = driver.find_element_by_tag_name('button')
+        search_button.click()
+        time.sleep(2)
+        ### verifying artist from search results
+        item_type = driver.find_element_by_class_name('itemtype')
+        if item_type.text == 'ARTIST' or item_type.text == 'LABEL':
+            link_heading = driver.find_element_by_class_name('heading')
+            artist_link = link_heading.find_element_by_tag_name('a')
+            artist_link.click()
+            time.sleep(2)
+        else:
+            continue
+        ### tests to find if artist page is directed to an album or if an album needs to be clicked
+        try:
+            if len(driver.find_elements_by_class_name('tag')) > 1:
+                tags = remove_empty_strings(driver.find_elements_by_class_name('tag'))
+                artist_dict[artist] = tags
+                case.append(artist_dict)
+            else:
+                header = driver.find_element_by_class_name('music-grid-item')
+                album_link = header.find_element_by_tag_name('a')
+                driver.execute_script("arguments[0].click();", album_link)
+                time.sleep(2.5)
+                tags = remove_empty_strings(driver.find_elements_by_class_name('tag'))
+                artist_dict[artist] = tags
+                case.append(artist_dict)
+        except:
+            continue
+        pickle.dump(case,open('artist_genre_scrape','wb'))
+        case = pickle.load(open('artist_genre_scrape','rb'))
+    return
