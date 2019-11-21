@@ -27,32 +27,23 @@ st.title("Genre Explorer")
 st.header("by Xristos Katsaros")
 st.subheader("Generate a category for a song and a list of others in the same category")
 
-song = st.text_input("Enter a song name","bartier cardi")
-artist = st.text_input("Enter the artist name",'cardi b')
-genre = st.text_input("Enter a genre",'optional')
-pl = st.text_input("Enter the name of your playlist")
+song = st.text_input("Enter a song name:")
+artist = st.text_input("Enter the artist name:")
+genre = st.text_input("Enter a genre (optional):")
+pl = st.text_input("Enter a name for your playlist or an existing playlist:")
 
 
 
 if st.button("Show me what you got"):
     f.refresh_token()
     ### check for genre ###
-    try:
-        genre
-    except NameError:
-        genre_exists = False
-    else:
-        genre_exists = True
-    if genre_exists:
-        continue
-    else:
+    if genre == "":
         genre = f.find_genre(artist,song)
-        
     ### classify the song ###
     p_class = f.model_work(artist,song,model)
 
     ### get list of song ids from database ###
-    id_list = f.search_db(data,p_class,genre)
+    id_list = f.search_db(p_class,genre)
 
     ### state the results ###
     # if p_class == 0:

@@ -66,7 +66,7 @@ def pl_creator(track_ids, user, pl_name):
     pl_id = check_playlist(user,pl_name)
     ## Search for albums in the dictionary
     add_to_playlist(user,pl_id,track_ids)
-    return
+    return st.title('You did it. Its done.')
 
 ####### function to flatten out lists of lists ######
 def flatten_lists(list_of_lists):
@@ -88,9 +88,7 @@ def refresh_token():
 def find_genre(artist,song):
     ##### define genres #####
     q = artistInfo.find({'bandcamp_genres':{'$exists':True}})
-    genres = []
-    for i in q:
-        g.append(i['bandcamp_genres'])
+    genres = [x['bandcamp_genres'] for x in q]
     genres = flatten_lists(genres)
     #### find the spotify genres based on user's search ####
     artist_id = sp.search(q=f'artist:{artist} track:{song}',type='track')['tracks']['items'][0]['artists'][0]['id']
@@ -99,14 +97,7 @@ def find_genre(artist,song):
     for genre in spotify_genres:
         if genre in genres:
             possible_genre_matches.append(genre)
-        else:
-            continue
-    if len(possible_genre_matches) > 1:
-        g = possible_genre_matches[0]
-    else:
-        continue
-    return g
-
+    return possible_genre_matches[0]
 
 def find_song(artist,song):
     try:
@@ -135,9 +126,13 @@ def model_work(artist,song,model):
         st.write("This song doesn't have audio features available (╥﹏╥)")
 
 def search_db(class_,genre):
-    q = artistInfo.find({'genres':genre,'class':class_},{'top_trax':1})
-    results = [x['top_trax'] for x in q, if len(x['top_trax']) > 0]
-    random_indicies = np.random.RandomState.random_integers(0,len(results),15)
+    class_ = class_.astype(str)
+    class_ = flatten_lists(class_)
+    q = artistInfo.find({'genres':genre,'class':class_[0]},{'top_trax':1})
+    results = [x['top_trax'] for x in q]
+    results = flatten_lists(results)
+    results_length = len(results) - 1
+    random_indicies = np.random.random_integers(0,results_length,15)
     id_list = []
     for i in random_indicies:
         id_list.append(results[i])
