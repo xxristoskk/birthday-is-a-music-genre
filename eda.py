@@ -1,6 +1,6 @@
 import pandas as pd
-import json
-import functions as f
+# import json
+# import functions as f
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,7 +53,7 @@ for item in data:
 track_ids = f.flatten_lists(track_ids)
 
 def get_new_feats(trax):
-    open('songs7.pickle','ab')
+    open('big_batch.pickle','ab')
     feat_data = []
     dump = 0
     for track in tqdm(trax):
@@ -68,36 +68,25 @@ def get_new_feats(trax):
             dump+=1
         f.refresh_token()
         if dump == 25:
-            pickle.dump(feat_data,open('songs7.pickle','wb'))
-            feat_data = pickle.load(open('songs7.pickle','rb'))
+            pickle.dump(feat_data,open('big_batch.pickle','wb'))
+            feat_data = pickle.load(open('big_batch.pickle','rb'))
             time.sleep(.25)
             dump = 0
     return
+get_new_feats(track_ids[2266101:])
 
-###### getting the first 250 ######
-get_new_feats(track_ids[1000000:1500000])
-944776+86300
-l = pickle.load(open('songs7.pickle','rb'))
-len(l)
-###### getting the next 250 #####
-s1 = pickle.load(open('songs.pickle','rb'))
-s2 = pickle.load(open('songs2.pickle','rb'))
-s3 = pickle.load(open('songs3.pickle','rb'))
-s4 = pickle.load(open('songs4.pickle','rb'))
-s5= pickle.load(open('songs5.pickle','rb'))
-s6= pickle.load(open('songs6.pickle','rb'))
-s7= pickle.load(open('songs7.pickle','rb'))
-
-songs = s1+s2+s3+s4+s5+s6+s7
-songs = f.flatten_lists(songs)
+a = pickle.load(open('song_batch1.pickle','rb'))
+l1 = []
+l2 = []
+for song in songs:
+    if song['id'] not in l1:
+        l1.append(song)
+    else:
+        l2.append(song)
 
 for song in songs:
     if song == None:
         songs.remove(song)
-
-af_df = pd.DataFrame(songs)
-
-af_df.info()
 
 ###### connecting to mongodb #####
 import config
@@ -116,11 +105,7 @@ results_a = audioFeatures.insert_many(songs)
 results_i = artistInfo.insert_many(data)
 db.list_collection_names()
 
-#### newly scraped bc artist info based on genre
-diw2 = pickle.load(open('bc_genre_releases2.pickle','rb'))
-diw3 = pickle.load(open('bc_genre_releases3.pickle','rb'))
-diw1 = pickle.load(open('bc_genre_releases.pickle','rb'))
-all_releases = diw3 + diw2 + diw1
+
 #### clean and organize scraped data
 l = []
 for item in all_releases:
@@ -148,25 +133,43 @@ for item in tqdm(l):
 the genre pages i scraped on bandcamp, only around 30k were found. the next step will be to write another scraping script
 which will search for the specific artists on bc and grab the genre tags directly from the artist page """
 
+####### audio features dataframe ########
+df = pickle.load(open('feat_df.pickle','rb'))
+df.drop_duplicates(inplace=True)
+df.shape
+df.columns
+df.drop(columns=['duration_ms','id','key','mode','time_signature','uri','track_href','type','analysis_url'],inplace=True)
+df.head(10)
 
+techno_df = df[df['genre']=='techno']
+techno_df = techno_df[techno_df['acousticness']<.5]
+techno_df = techno_df[techno_df['liveness']<.5]
+techno_df.shape
+techno_df.shape
+
+plt.figure(figsize=(15,10))
+df['genre'].value_counts().plot(kind='bar')
+plt.savefig('bc_genre_dist.png')
+
+import seaborn as sb
+sb.heatmap(techno_df.corr())
+df.shape
 ####### scaling ##########
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
-X = scaler.fit_transform(e_df)
-e_df.isna().sum()
+X = scaler.fit_transform(df.drop(columns='genre'))
 
 ###Perform PCA and plot results
 from sklearn.decomposition import PCA
-pca = PCA(n_components=11)
+pca = PCA(n_components=9)
 pca_data = pca.fit_transform(X)
-df_pca = pd.DataFrame(data=pca_data,columns=[1,2,3,4,5,6,7,8,9,10,11])
+df_pca = pd.DataFrame(data=pca_data,columns=[1,2,3,4,5,6,7,8,9])
 
-import seaborn as sns
-plt.scatter(pca_data[:,0],pca_data[:,2])
+plt.scatter(pca_data[:,0],pca_data[:,1])
 plt.plot(np.cumsum(pca.explained_variance_ratio_))
 
 sns.heatmap(e_df.corr())
-index = np.arange(11)
+index = np.arange(9)
 plt.bar(index, pca.explained_variance_ratio_)
 plt.title('Scree plot for PCA')
 plt.xlabel('Num of components')
@@ -174,7 +177,7 @@ plt.ylabel('proportion of explained variance')
 df_pca
 fig = plt.figure(figsize=(13,11))
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(df_pca[1], df_pca[2], df_pca[3], c='green')
+ax.scatter(df_pca[1], df_pca[5], df_pca[3], c='green')
 plt.show()
 
 ##### some quick plotting
