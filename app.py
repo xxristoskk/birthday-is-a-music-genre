@@ -11,21 +11,17 @@ import config
 import numpy as np
 from PIL import Image
 
-###### load local dataset #####
-data = pickle.load(open('everything_db.pickle','rb'))
-data.reset_index(drop=True,inplace=True)
-data.drop_duplicates(inplace=True)
-data.dropna(inplace=True)
+
 ###### model ######
-model = pickle.load(open('trained_rfc.pickle','rb'))
+model = pickle.load(open('trained_rfc_everything.pickle','rb'))
 ############### classes ##################
-one = 'The weird and intense'
-two = 'Everything Henry Rollins hates'
-three = 'Why am I crying in the club'
-four = 'Just let me chill, damn'
-five = 'Redbull & vodka'
-six = 'Big club energy'
-seven = 'Spacy bassy'
+# one = 'The weird and intense'
+# two = 'Everything Henry Rollins hates'
+# three = 'Why am I crying in the club'
+# four = 'Just let me chill, damn'
+# five = 'Redbull & vodka'
+# six = 'Big club energy'
+# seven = 'Spacy bassy'
 ################### App ####################
 st.title("Genre Explorer")
 st.header("by Xristos Katsaros")
@@ -33,24 +29,45 @@ st.subheader("Generate a category for a song and a list of others in the same ca
 
 song = st.text_input("Enter a song name","bartier cardi")
 artist = st.text_input("Enter the artist name",'cardi b')
-# pl = st.text_input("Enter the name of your playlist")
+genre = st.text_input("Enter a genre",'optional')
+pl = st.text_input("Enter the name of your playlist")
 
-if st.button("Generate the category"):
+
+
+if st.button("Show me what you got"):
     f.refresh_token()
+    ### check for genre ###
+    try:
+        genre
+    except NameError:
+        genre_exists = False
+    else:
+        genre_exists = True
+    if genre_exists:
+        continue
+    else:
+        genre = f.find_genre(artist,song)
+        
+    ### classify the song ###
     p_class = f.model_work(artist,song,model)
-    # id_list = f.search_db(data,p_class)
-    if p_class == 0:
-        st.write(f'This song is categorized as "{one}"')
-    elif p_class == 1:
-        st.write(f'This song is categorized as "{two}"')
-    elif p_class == 2:
-        st.write(f'This song is categorized as "{three}"')
-    elif p_class == 3:
-        st.write(f'This song is categorized as "{four}"')
-    elif p_class == 4:
-        st.write(f'This song is categorized as "{five}"')
-    elif p_class == 5:
-        st.write(f'This song is categorized as "{six}"')
-    elif p_class == 6:
-        st.write(f'This song is categorized as "{seven}"')
-    # f.pl_creator(id_list,config.username,pl)
+
+    ### get list of song ids from database ###
+    id_list = f.search_db(data,p_class,genre)
+
+    ### state the results ###
+    # if p_class == 0:
+    #     st.write(f'This song is in the "{one}" category')
+    # elif p_class == 1:
+    #     st.write(f'This song is in the "{two}" category ')
+    # elif p_class == 2:
+    #     st.write(f'This song is in the "{three}" category')
+    # elif p_class == 3:
+    #     st.write(f'This song is in the "{four}" category')
+    # elif p_class == 4:
+    #     st.write(f'This song is in the "{five}" category')
+    # elif p_class == 5:
+    #     st.write(f'This song is in the "{six}" category')
+    # elif p_class == 6:
+    #     st.write(f'This song is in the "{seven}" category')
+    ### create playlist ###
+    f.pl_creator(id_list,config.username,pl)

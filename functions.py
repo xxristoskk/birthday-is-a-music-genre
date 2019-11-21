@@ -11,6 +11,13 @@ import pandas as pd
 import pickle
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from pymongo import MongoClient
+import pymongo
+
+##### Prepare the database
+client = MongoClient(f'mongodb+srv://xristos:{config.mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
+db = client.BC01
+artistInfo = db['artistInfo']
 
 ################### Spotify autho ######################
 scope = 'playlist-modify-public'
@@ -31,7 +38,10 @@ if not token_info:
 
 sp = spotipy.Spotify(auth=token)
 
-## helper functions for pl_creator
+## helper functions spotify api
+def get_top_tracks(artist_id):
+    return [x['id'] for x in sp.artist_top_tracks(artist_id)['tracks']]
+
 def check_playlist(user, pl_name):
     for playlist in sp.user_playlists(user)['items']:
         if pl_name == playlist['name']:
@@ -62,7 +72,7 @@ def pl_creator(track_ids, user, pl_name):
 def flatten_lists(list_of_lists):
     return [x for y in list_of_lists for x in y]
 
-################## functions ###############
+########### app functions ###############
 def is_token_expired(token_info):
     now = int(time.time())
     return token_info['expires_at'] - now < 60
@@ -74,12 +84,36 @@ def refresh_token():
         token = token_info['access_token']
         sp = spotipy.Spotify(auth=token)
 
+
+def find_genre(artist,song):
+    ##### define genres #####
+    q = artistInfo.find({'bandcamp_genres':{'$exists':True}})
+    genres = []
+    for i in q:
+        g.append(i['bandcamp_genres'])
+    genres = flatten_lists(genres)
+    #### find the spotify genres based on user's search ####
+    artist_id = sp.search(q=f'artist:{artist} track:{song}',type='track')['tracks']['items'][0]['artists'][0]['id']
+    spotify_genres = sp.artist(artist_id)['genres']
+    possible_genre_matches = []
+    for genre in spotify_genres:
+        if genre in genres:
+            possible_genre_matches.append(genre)
+        else:
+            continue
+    if len(possible_genre_matches) > 1:
+        g = possible_genre_matches[0]
+    else:
+        continue
+    return g
+
+
 def find_song(artist,song):
     try:
         id_ = sp.search(q=f'artist:{artist} track:{song}',type='track')['tracks']['items'][0]['id']
         return id_
     except:
-        st.write("Couldn't find what you're looking for.")
+        st.write("Couldn't find what you're looking for (╥﹏╥)")
 
 def get_features(id_):
     return sp.audio_features(id_)
@@ -94,15 +128,17 @@ def model_work(artist,song,model):
     id_ = find_song(artist,song)
     try:
         df = pd.DataFrame(get_features(id_))
-        df.drop(columns=['key','time_signature','liveness','analysis_url','duration_ms','id','mode','type','uri','track_href'],inplace=True)
+        df.drop(columns=['key','time_signature','analysis_url','duration_ms','id','mode','type','uri','track_href'],inplace=True)
         X = scaler.fit_transform(df)
         return model.predict(X)
     except:
-        st.write("This song doesn't have audio features available :(")
+        st.write("This song doesn't have audio features available (╥﹏╥)")
 
-def search_db(data,class_):
+def search_db(class_,genre):
+    q = artistInfo.find({'genres':genre,'class':class_},{'top_trax':1})
+    results = [x['top_trax'] for x in q, if len(x['top_trax']) > 0]
+    random_indicies = np.random.RandomState.random_integers(0,len(results),15)
     id_list = []
-    inds = np.random.randint(low=0, high=10000, size=20)
-    for i in inds:
-        id_list.append(list(data[data['labels']==int(class_)]['id'])[i])
+    for i in random_indicies:
+        id_list.append(results[i])
     return id_list
