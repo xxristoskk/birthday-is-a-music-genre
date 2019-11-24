@@ -1,0 +1,4 @@
+streamlit
+functions
+pickle
+spotipy

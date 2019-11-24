@@ -20,23 +20,35 @@ db = client.BC01
 artistInfo = db['artistInfo']
 
 ################### Spotify autho ######################
-scope = 'playlist-modify-public'
-
 def is_token_expired(token_info):
     now = int(time.time())
     return token_info['expires_at'] - now < 60
 
+def refresh_token():
+    global token_info, sp
+    if is_token_expired(token_info):
+        token_info = oauth.refresh_access_token(token_info['refresh_token'])
+        token = token_info['access_token']
+        sp = spotipy.Spotify(auth=token)
+
+scope = 'playlist-modify-public'
 oauth = SpotifyOAuth(client_id=config.ClientID,client_secret=config.ClientSecret,redirect_uri='http://localhost/',scope=scope)
 token_info = oauth.get_cached_token()
 if not token_info:
     auth_url = oauth.get_authorize_url()
-    print(auth_url)
-    response = input('Paste the above link into your browser, then paste the redirect url here: ')
+    st.write(auth_url)
+    response = st.text_input('Paste the above link into your browser, then paste the redirect url here: ')
+    # response = input('Paste the above link into your browser, then paste the redirect url here: ')
+    time.sleep(5)
+    st.write(response)
+    if response == "":
+        time.sleep(10)
+    print(response)
     code = oauth.parse_response_code(response)
     token_info = oauth.get_access_token(code)
     token = token_info['access_token']
+    sp = spotipy.Spotify(auth=token)
 
-sp = spotipy.Spotify(auth=token)
 
 ## helper functions spotify api
 def get_top_tracks(artist_id):
@@ -73,17 +85,6 @@ def flatten_lists(list_of_lists):
     return [x for y in list_of_lists for x in y]
 
 ########### app functions ###############
-def is_token_expired(token_info):
-    now = int(time.time())
-    return token_info['expires_at'] - now < 60
-
-def refresh_token():
-    global token_info, sp
-    if is_token_expired(token_info):
-        token_info = oauth.refresh_access_token(token_info['refresh_token'])
-        token = token_info['access_token']
-        sp = spotipy.Spotify(auth=token)
-
 
 def find_genre(artist,song):
     ##### define genres #####
@@ -97,6 +98,14 @@ def find_genre(artist,song):
     for genre in spotify_genres:
         if genre in genres:
             possible_genre_matches.append(genre)
+    if len(possible_genre_matches) < 1:
+        for g in genres:
+            for genre in spotify_genres:
+                if g in genre:
+                    possible_genre_matches.append(g)
+                    break
+    if len(possible_genre_matches) < 1:
+        return print('Nothing in the database for this yet (╥﹏╥)')
     return possible_genre_matches[0]
 
 def find_song(artist,song):
@@ -131,9 +140,35 @@ def search_db(class_,genre):
     q = artistInfo.find({'genres':genre,'class':class_[0]},{'top_trax':1})
     results = [x['top_trax'] for x in q]
     results = flatten_lists(results)
+    if len(results) < 1:
+        return st.write("Couldn't find what you're looking for (╥﹏╥)")
     results_length = len(results) - 1
-    random_indicies = np.random.random_integers(0,results_length,15)
+    random_indicies = np.random.random_integers(0,results_length,40)
     id_list = []
     for i in random_indicies:
         id_list.append(results[i])
     return id_list
+
+
+def display_results(track_ids):
+    r = sp.tracks(track_ids)
+    pop_artist = ""
+    followers = 0
+    song = ""
+    for item,value in r.items():
+        artist_id = value[0]['artists'][0]['id']
+        print(artist_id)
+        artist_r = sp.artist(artist_id)
+        f = artist_r['followers']['total']
+        print(f)
+        print(type(f))
+        print(type(followers))
+        if f > followers:
+            followers = f
+            pop_artist = artist_r['name']
+            song = value[0]['name']
+        else:
+            pass
+    st.write(f'The most popular artist in your playlist is {pop_artist}.')
+    st.write(f'They have {followers} followers on Spotify.')
+    st.write(f'You can find their song "{song}" on your playlist, if you decided to make one.')
