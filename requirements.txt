@@ -1,4 +1,2 @@
 streamlit
-functions
-pickle
 spotipy
