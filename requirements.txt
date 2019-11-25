@@ -3,4 +3,5 @@ spotipy
 scikit-learn
 pandas
 numpy
+dnspython
 pymongo
