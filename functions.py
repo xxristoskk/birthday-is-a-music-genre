@@ -182,8 +182,7 @@ def display_results(track_ids,genre,p_class):
             followers = f
             pop_artist = artist_r['name']
             song = value[0]['name']
-        else:
-            pass
+
     ## state the results ###
     if p_class == 0:
         st.write(f'This song is in the "{one}" category')
