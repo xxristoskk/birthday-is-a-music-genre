@@ -3,7 +3,7 @@ import functions as f
 import pickle
 
 ###### model ######
-model = pickle.load(open('trained_rfc_everything.pickle','rb'))
+model = pickle.load(open('trained_rfc_electronic.pickle','rb'))
 
 def main():
     ############### classes ##################
