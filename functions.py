@@ -12,8 +12,10 @@ from sklearn.preprocessing import StandardScaler
 from pymongo import MongoClient
 import pymongo
 
+
 ##### Prepare the database
-client = MongoClient(f'mongodb+srv://xristos:{os.environ['mongo_pw']}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
+mongo_pw = os.environ['mongo_pw']
+client = MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
 
