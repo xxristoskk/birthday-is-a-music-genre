@@ -176,7 +176,7 @@ def display_results(track_ids,genre,p_class):
         name = artist_r['name']
         genres = artist_r['genres']
         link = artist_r['external_urls']['spotify']
-        st.write(f'Artist name: {name}, Spotify genres: {genres}, Spotify link: {link})
+        st.write(f'Artist name: {name}, Spotify genres: {genres}, Spotify link: {link}')
         f = artist_r['followers']['total']
         if f > followers:
             followers = f
