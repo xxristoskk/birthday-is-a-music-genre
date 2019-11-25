@@ -9,8 +9,7 @@ def main():
     ################### App ####################
     st.title("Curation Station (alpha)")
     st.header("by Xristos Katsaros")
-    st.subheader('''Generate a Spotify playlist full of independent releases based on a single song search. This is is part of an
-                    ongoing project. In its current state, the app only works with electronic music and its broad range of sub-genres.''')
+    st.subheader('Generate a Spotify playlist full of independent releases based on a single song search. This is is part of an ongoing project. In its current state, the app only works with electronic music and its broad range of sub-genres.')
 
     st.header("Required")
     song = st.text_input("Enter a song name:")

@@ -195,6 +195,8 @@ def display_results(track_ids,genre,p_class):
             followers = f
             pop_artist = artist_r['name']
             song = value[0]['name']
+        else:
+            continue
     st.write(f'This search is looking for {genre} songs')
     st.write(f'The most popular artist this category is {pop_artist} with {followers} on Spotify.')
     st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')
