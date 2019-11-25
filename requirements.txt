@@ -1,2 +1,6 @@
 streamlit
 spotipy
+scikit-learn
+pandas
+numpy
+pymongo

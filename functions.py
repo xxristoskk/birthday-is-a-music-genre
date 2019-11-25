@@ -6,16 +6,14 @@ from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 import os
 import time
 import pandas as pd
-import pickle
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from pymongo import MongoClient
 import pymongo
 
 
 ##### Prepare the database
 mongo_pw = os.environ['mongo_pw']
-client = MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
+client = pymongo.MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
 
