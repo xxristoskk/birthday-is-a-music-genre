@@ -76,7 +76,7 @@ def pl_creator(track_ids, user, pl_name):
     pl_id = check_playlist(user,pl_name)
     ## Search for albums in the dictionary
     add_to_playlist(user,pl_id,track_ids)
-    return st.title('You did it. Its done.')
+    return st.title('The playlist is done! Yay! (ﾉ☉ヮ⚆)ﾉ ⌒*:･ﾟ✧')
 
 ####### function to flatten out lists of lists ######
 def flatten_lists(list_of_lists):
@@ -84,6 +84,7 @@ def flatten_lists(list_of_lists):
 
 ########### app functions ###############
 
+### finds the genre of the artist of the user's song
 def find_genre(artist,song):
     global genre
     ##### define genres #####
@@ -108,6 +109,7 @@ def find_genre(artist,song):
     genre = possible_genre_matches[0]
     return genre
 
+### searchs for the user's song
 def find_song(artist,song):
     try:
         id_ = sp.search(q=f'artist:{artist} track:{song}',type='track')['tracks']['items'][0]['id']
@@ -115,14 +117,17 @@ def find_song(artist,song):
     except:
         st.write("Couldn't find what you're looking for (╥﹏╥)")
 
+### gets the audio features the user's song
 def get_features(id_):
     return sp.audio_features(id_)
 
+### normalizes the data for the data
 def normalize_col(df):
     for col in df:
         df[col] = (df[col] - df[col].mean()) / df[col].std()
     return df
 
+### finds the user's song and runs its audio features through the trained random forest model ###
 def model_work(artist,song,model):
     scaler = StandardScaler()
     id_ = find_song(artist,song)
@@ -134,6 +139,7 @@ def model_work(artist,song,model):
     except:
         st.write("This song doesn't have audio features available (╥﹏╥)")
 
+### searches the database for songs by artists that are in both the same genre and class as the user's song##
 def search_db(class_,genre):
     class_ = class_.astype(str)
     class_ = flatten_lists(class_)
@@ -149,8 +155,17 @@ def search_db(class_,genre):
         id_list.append(results[i])
     return id_list
 
+### class names ###
+one = 'Redbull & Vodka'
+two = 'Nap time'
+three = "You're scaring the bros"
+four = 'Rave church'
+five = 'Sounds like a heart attack'
+six = 'Why am I crying in the club rn'
+seven = 'Just let me chill, damn'
 
-def display_results(track_ids):
+#### takes in the list of track ids for the playlist and displays the results to the user ###
+def display_results(track_ids,genre,p_class):
     r = sp.tracks(track_ids)
     pop_artist = ""
     followers = 0
@@ -169,6 +184,21 @@ def display_results(track_ids):
             song = value[0]['name']
         else:
             pass
+    ## state the results ###
+    if p_class == 0:
+        st.write(f'This song is in the "{one}" category')
+    elif p_class == 1:
+        st.write(f'This song is in the "{two}" category ')
+    elif p_class == 2:
+        st.write(f'This song is in the "{three}" category')
+    elif p_class == 3:
+        st.write(f'This song is in the "{four}" category')
+    elif p_class == 4:
+        st.write(f'This song is in the "{five}" category')
+    elif p_class == 5:
+        st.write(f'This song is in the "{six}" category')
+    elif p_class == 6:
+        st.write(f'This song is in the "{seven}" category')
     st.write(f'This search is looking for {genre} songs')
     st.write(f'The most popular artist in your playlist is {pop_artist} with {followers} on Spotify.')
     st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')

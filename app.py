@@ -38,22 +38,7 @@ def main():
         p_class = f.model_work(artist,song,model)
             ### get list of song ids from database ###
         id_list = f.search_db(p_class,genre)
-        f.display_results(id_list)
-        ### state the results ###
-        # if p_class == 0:
-        #     st.write(f'This song is in the "{one}" category')
-        # elif p_class == 1:
-        #     st.write(f'This song is in the "{two}" category ')
-        # elif p_class == 2:
-        #     st.write(f'This song is in the "{three}" category')
-        # elif p_class == 3:
-        #     st.write(f'This song is in the "{four}" category')
-        # elif p_class == 4:
-        #     st.write(f'This song is in the "{five}" category')
-        # elif p_class == 5:
-        #     st.write(f'This song is in the "{six}" category')
-        # elif p_class == 6:
-        #     st.write(f'This song is in the "{seven}" category')
+        f.display_results(id_list,genre,p_class)
         ### create playlist ###
         if pl != "":
             f.pl_creator(id_list,username,pl)
