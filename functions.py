@@ -85,6 +85,7 @@ def flatten_lists(list_of_lists):
 ########### app functions ###############
 
 def find_genre(artist,song):
+    global genre
     ##### define genres #####
     q = artistInfo.find({'bandcamp_genres':{'$exists':True}})
     genres = [x['bandcamp_genres'] for x in q]
@@ -93,18 +94,19 @@ def find_genre(artist,song):
     artist_id = sp.search(q=f'artist:{artist} track:{song}',type='track')['tracks']['items'][0]['artists'][0]['id']
     spotify_genres = sp.artist(artist_id)['genres']
     possible_genre_matches = []
-    for genre in spotify_genres:
-        if genre in genres:
-            possible_genre_matches.append(genre)
+    for g in spotify_genres:
+        if g in genres:
+            possible_genre_matches.append(g)
     if len(possible_genre_matches) < 1:
-        for g in genres:
-            for genre in spotify_genres:
-                if g in genre:
-                    possible_genre_matches.append(g)
+        for gnr1 in genres:
+            for gnr2 in spotify_genres:
+                if gnr1 in gnr2:
+                    possible_genre_matches.append(gnr1)
                     break
     if len(possible_genre_matches) < 1:
         return print('Nothing in the database for this yet (╥﹏╥)')
-    return possible_genre_matches[0]
+    genre = possible_genre_matches[0]
+    return genre
 
 def find_song(artist,song):
     try:
@@ -167,6 +169,6 @@ def display_results(track_ids):
             song = value[0]['name']
         else:
             pass
-    st.write(f'The most popular artist in your playlist is {pop_artist}.')
-    st.write(f'They have {followers} followers on Spotify.')
-    st.write(f'You can find their song "{song}" on your playlist, if you decided to make one.')
+    st.write(f'This search is looking for {genre} songs')
+    st.write(f'The most popular artist in your playlist is {pop_artist} with {followers} on Spotify.')
+    st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')

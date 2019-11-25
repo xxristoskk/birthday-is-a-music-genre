@@ -20,15 +20,16 @@ def main():
     st.header("by Xristos Katsaros")
     st.subheader("Generate a Spotify playlist full of independent releases based on a single song search")
 
-
+    st.header("Required")
     song = st.text_input("Enter a song name:")
     artist = st.text_input("Enter the artist name:")
-    genre = st.text_input("Enter a genre (optional):")
-    pl = st.text_input("If you're making or editing a playlist, put that here:")
-    username = st.text_input('Please enter your exact username to make the playlist:')
+    st.header("Optional")
+    genre = st.text_input("Enter a genre:")
+    pl = st.text_input("Name of the new or existing playlist:")
+    username = st.text_input('Enter your exact username:')
 
 
-    if st.button("Gimme the results"):
+    if st.button("Show me the results! 	ԅ(≖‿≖ԅ)"):
         f.refresh_token()
         ### check for genre ###
         if genre == "":
