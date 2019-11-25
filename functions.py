@@ -76,7 +76,7 @@ def pl_creator(track_ids, user, pl_name):
     pl_id = check_playlist(user,pl_name)
     ## Search for albums in the dictionary
     add_to_playlist(user,pl_id,track_ids)
-    return st.title('The playlist is done! Yay! (ﾉ☉ヮ⚆)ﾉ ⌒*:･ﾟ✧')
+    return st.title('The playlist is done! (ﾉ☉ヮ⚆)ﾉ ⌒*:･ﾟ✧')
 
 ####### function to flatten out lists of lists ######
 def flatten_lists(list_of_lists):
@@ -172,12 +172,9 @@ def display_results(track_ids,genre,p_class):
     song = ""
     for item,value in r.items():
         artist_id = value[0]['artists'][0]['id']
-        print(artist_id)
         artist_r = sp.artist(artist_id)
+        st.write(f'Artist name: {artist_r['name']}, Spotify genres: {artist_r['genres']}, Spotify link: {artist_r['external_urls']['spotify']})
         f = artist_r['followers']['total']
-        print(f)
-        print(type(f))
-        print(type(followers))
         if f > followers:
             followers = f
             pop_artist = artist_r['name']

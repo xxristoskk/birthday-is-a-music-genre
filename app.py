@@ -29,7 +29,7 @@ def main():
     username = st.text_input('Enter your exact username:')
 
 
-    if st.button("Show me the results! 	ԅ(≖‿≖ԅ)"):
+    if st.button("gimme those sweet trax ԅ(≖‿≖ԅ)"):
         f.refresh_token()
         ### check for genre ###
         if genre == "":
