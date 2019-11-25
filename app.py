@@ -5,7 +5,7 @@ import pickle
 ###### model ######
 model = pickle.load(open('trained_rfc_everything.pickle','rb'))
 
-    def main():
+def main():
     ############### classes ##################
     # one = 'The weird and intense'
     # two = 'Everything Henry Rollins hates'
