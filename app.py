@@ -57,4 +57,4 @@ def main():
         if pl != "":
             f.pl_creator(id_list,username,pl)
 if __name__ == '__main__':
-    meain()
+    main()
