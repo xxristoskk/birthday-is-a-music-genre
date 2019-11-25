@@ -1,12 +1,10 @@
 import streamlit as st
 import spotipy
-import json
 import spotipy.util as util
 from spotipy import oauth2
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-import config
+import os
 import time
-from tqdm import tqdm
 import pandas as pd
 import pickle
 import numpy as np
@@ -15,7 +13,7 @@ from pymongo import MongoClient
 import pymongo
 
 ##### Prepare the database
-client = MongoClient(f'mongodb+srv://xristos:{config.mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
+client = MongoClient(f'mongodb+srv://xristos:{os.environ['mongo_pw']}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
 
@@ -32,7 +30,7 @@ def refresh_token():
         sp = spotipy.Spotify(auth=token)
 
 scope = 'playlist-modify-public'
-oauth = SpotifyOAuth(client_id=config.ClientID,client_secret=config.ClientSecret,redirect_uri='http://localhost/',scope=scope)
+oauth = SpotifyOAuth(client_id=os.environ['ClientID'],client_secret=os.environ['ClientSecret'],redirect_uri='http://localhost/',scope=scope)
 token_info = oauth.get_cached_token()
 if not token_info:
     auth_url = oauth.get_authorize_url()
