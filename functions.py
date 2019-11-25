@@ -173,7 +173,10 @@ def display_results(track_ids,genre,p_class):
     for item,value in r.items():
         artist_id = value[0]['artists'][0]['id']
         artist_r = sp.artist(artist_id)
-        st.write(f'Artist name: {artist_r['name']}, Spotify genres: {artist_r['genres']}, Spotify link: {artist_r['external_urls']['spotify']})
+        name = artist_r['name']
+        genres = artist_r['genres']
+        link = artist_r['external_urls']['spotify']
+        st.write(f'Artist name: {name}, Spotify genres: {genres}, Spotify link: {link})
         f = artist_r['followers']['total']
         if f > followers:
             followers = f
