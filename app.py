@@ -6,19 +6,11 @@ import pickle
 model = pickle.load(open('trained_rfc_electronic.pickle','rb'))
 
 def main():
-    ############### classes ##################
-    # one = 'The weird and intense'
-    # two = 'Everything Henry Rollins hates'
-    # three = 'Why am I crying in the club'
-    # four = 'Just let me chill, damn'
-    # five = 'Redbull & vodka'
-    # six = 'Big club energy'
-    # seven = 'Spacy bassy'
-
     ################### App ####################
-    st.title("Curation Station")
+    st.title("Curation Station (alpha)")
     st.header("by Xristos Katsaros")
-    st.subheader("Generate a Spotify playlist full of independent releases based on a single song search")
+    st.subheader('''Generate a Spotify playlist full of independent releases based on a single song search. This is is part of an
+                    ongoing project. In its current state, the app only works with electronic music and its broad range of sub-genres.''')
 
     st.header("Required")
     song = st.text_input("Enter a song name:")

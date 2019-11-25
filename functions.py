@@ -35,13 +35,10 @@ token_info = oauth.get_cached_token()
 if not token_info:
     auth_url = oauth.get_authorize_url()
     st.write(auth_url)
-    response = st.text_input('Paste the above link into your browser, then paste the redirect url here: ')
+    response = st.text_input('Click the above link, then paste the redirect url here: ')
     # response = input('Paste the above link into your browser, then paste the redirect url here: ')
-    time.sleep(5)
-    st.write(response)
     if response == "":
-        time.sleep(10)
-    print(response)
+        time.sleep(5)
     code = oauth.parse_response_code(response)
     token_info = oauth.get_access_token(code)
     token = token_info['access_token']
@@ -139,7 +136,7 @@ def model_work(artist,song,model):
     except:
         st.write("This song doesn't have audio features available (╥﹏╥)")
 
-### searches the database for songs by artists that are in both the same genre and class as the user's song##
+### searches the database for songs by artists that are in both the same genre and class as the user's song ###
 def search_db(class_,genre):
     class_ = class_.astype(str)
     class_ = flatten_lists(class_)
@@ -166,6 +163,22 @@ seven = 'Just let me chill, damn'
 
 #### takes in the list of track ids for the playlist and displays the results to the user ###
 def display_results(track_ids,genre,p_class):
+    ### display the category (class) of the user's song ###
+    if p_class == 0:
+        st.write(f'This song is in the "{one}" category')
+    elif p_class == 1:
+        st.write(f'This song is in the "{two}" category ')
+    elif p_class == 2:
+        st.write(f'This song is in the "{three}" category')
+    elif p_class == 3:
+        st.write(f'This song is in the "{four}" category')
+    elif p_class == 4:
+        st.write(f'This song is in the "{five}" category')
+    elif p_class == 5:
+        st.write(f'This song is in the "{six}" category')
+    elif p_class == 6:
+        st.write(f'This song is in the "{seven}" category')
+    ### display the info for the songs in the playlist ###
     r = sp.tracks(track_ids)
     pop_artist = ""
     followers = 0
@@ -182,22 +195,6 @@ def display_results(track_ids,genre,p_class):
             followers = f
             pop_artist = artist_r['name']
             song = value[0]['name']
-
-    ## state the results ###
-    if p_class == 0:
-        st.write(f'This song is in the "{one}" category')
-    elif p_class == 1:
-        st.write(f'This song is in the "{two}" category ')
-    elif p_class == 2:
-        st.write(f'This song is in the "{three}" category')
-    elif p_class == 3:
-        st.write(f'This song is in the "{four}" category')
-    elif p_class == 4:
-        st.write(f'This song is in the "{five}" category')
-    elif p_class == 5:
-        st.write(f'This song is in the "{six}" category')
-    elif p_class == 6:
-        st.write(f'This song is in the "{seven}" category')
     st.write(f'This search is looking for {genre} songs')
-    st.write(f'The most popular artist in your playlist is {pop_artist} with {followers} on Spotify.')
+    st.write(f'The most popular artist this category is {pop_artist} with {followers} on Spotify.')
     st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')
