@@ -7,6 +7,7 @@ import os
 import time
 import pandas as pd
 import numpy as np
+from sklearn.ensemble import RandomForestClassifer
 from sklearn.preprocessing import StandardScaler
 import pymongo
 
@@ -185,8 +186,8 @@ def display_results(track_ids,genre,p_class):
     pop_artist = ""
     followers = 0
     song = ""
-    for item,value in r.items():
-        artist_id = value[0]['artists'][0]['id']
+    for value in r.values():
+        artist_id = value['artists'][0]['id']
         artist_r = sp.artist(artist_id)
         name = artist_r['name']
         genres = artist_r['genres']
@@ -195,10 +196,9 @@ def display_results(track_ids,genre,p_class):
         f = artist_r['followers']['total']
         if f > followers:
             followers = f
-            pop_artist = artist_r['name']
-            song = value[0]['name']
+            pop_artist = name
+            song = value['name']
         else:
             continue
-    st.write(f'This search is looking for {genre} songs')
-    st.write(f'The most popular artist this category is {pop_artist} with {followers} on Spotify.')
+    st.write(f'The most popular artist this category is {pop_artist} with {followers} followers on Spotify.')
     st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')
