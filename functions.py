@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import pymongo
-import config
 
 ##### Prepare the database
 mongo_pw = os.environ['mongo_pw']
