@@ -13,7 +13,7 @@ import config
 
 ##### Prepare the database
 mongo_pw = os.environ['mongo_pw']
-mong_pw = config.mongo_pw
+# mongo_pw = config.mongo_pw
 client = pymongo.MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
