@@ -35,7 +35,8 @@ token_info = oauth.get_cached_token()
 if not token_info:
     auth_url = oauth.get_authorize_url()
     st.write(auth_url)
-    response = st.text_input('Click the above link, then paste the redirect url here: ')
+    response = st.text_input('Click the above link, then paste the redirect url here and hit enter: ')
+    st.write('*The BadAuth error below should go away after entering the redirect url')
     # response = input('Paste the above link into your browser, then paste the redirect url here: ')
     if response == "":
         time.sleep(5)

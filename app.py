@@ -9,7 +9,7 @@ def main():
     ################### App ####################
     st.title("Curation Station (alpha)")
     st.header("by Xristos Katsaros")
-    st.subheader('Generate a Spotify playlist full of independent releases based on a single song search. This is is part of an ongoing project. In its current state, the app only works with electronic music and its broad range of sub-genres.')
+    st.subheader('Generate a Spotify playlist full of independent releases based on a single song search. This is part of an ongoing project. In its current state, the app only works with electronic music and its broad range of sub-genres.')
 
     st.header("Required")
     song = st.text_input("Enter a song name:")
@@ -20,7 +20,7 @@ def main():
     username = st.text_input('Enter your exact username:')
 
 
-    if st.button("gimme those sweet trax ԅ(≖‿≖ԅ)"):
+    if st.button("give me those sweet trax ԅ(≖‿≖ԅ)"):
         f.refresh_token()
         ### check for genre ###
         if genre == "":
@@ -33,5 +33,6 @@ def main():
         ### create playlist ###
         if pl != "":
             f.pl_creator(id_list,username,pl)
+
 if __name__ == '__main__':
     main()
