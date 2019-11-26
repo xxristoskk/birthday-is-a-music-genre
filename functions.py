@@ -10,10 +10,11 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 import pymongo
+import config
 
 ##### Prepare the database
-mongo_pw = os.environ['mongo_pw']
-# mongo_pw = config.mongo_pw
+# mongo_pw = os.environ['mongo_pw']
+mongo_pw = config.mongo_pw
 client = pymongo.MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
@@ -32,7 +33,11 @@ def refresh_token():
         sp = spotipy.Spotify(auth=token)
 
 scope = 'playlist-modify-public'
-oauth = SpotifyOAuth(client_id=os.environ['ClientID'],client_secret=os.environ['ClientSecret'],redirect_uri='http://localhost/',scope=scope)
+# id = os.environ['ClientID']
+# secret = os.environ['ClientSecret']
+id = config.ClientID
+secret = config.ClientSecret
+oauth = SpotifyOAuth(client_id=id,client_secret=secret,redirect_uri='http://localhost/',scope=scope)
 token_info = oauth.get_cached_token()
 if not token_info:
     auth_url = oauth.get_authorize_url()
@@ -186,19 +191,23 @@ def display_results(track_ids,genre,p_class):
     pop_artist = ""
     followers = 0
     song = ""
-    for value in r.values():
-        artist_id = value['artists'][0]['id']
-        artist_r = sp.artist(artist_id)
-        name = artist_r['name']
-        genres = artist_r['genres']
-        link = artist_r['external_urls']['spotify']
-        st.write(f'Artist name: {name}, Spotify genres: {genres}, Spotify link: {link}')
-        f = artist_r['followers']['total']
-        if f > followers:
-            followers = f
-            pop_artist = name
-            song = value['name']
-        else:
-            continue
+    for key,value in r.items():
+        for result in value:
+            artist_id = result['artists'][0]['id']
+            artist_r = sp.artist(artist_id)
+            name = artist_r['name']
+            genres = artist_r['genres']
+            link = artist_r['external_urls']['spotify']
+            st.write(f'Artist name: {name}')
+            st.write(f'Spotify genres: {genres}')
+            st.write(f'Spotify link: {link}')
+            st.write('~-~-~-~-~-~-~-~-~-~-~')
+            f = artist_r['followers']['total']
+            if f > followers:
+                followers = f
+                pop_artist = name
+                song = result['name']
+            else:
+                continue
     st.write(f'The most popular artist this category is {pop_artist} with {followers} followers on Spotify.')
     st.write(f'If you decided to make a playlist, you can find their song "{song}" on there')
