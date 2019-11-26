@@ -9,13 +9,15 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import pymongo
-
+import config
 
 ##### Prepare the database
 mongo_pw = os.environ['mongo_pw']
+mong_pw = config.mongo_pw
 client = pymongo.MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
+
 
 ################### Spotify autho ######################
 def is_token_expired(token_info):

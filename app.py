@@ -4,6 +4,8 @@ import pickle
 
 ###### model ######
 model = pickle.load(open('trained_rfc_electronic.pickle','rb'))
+##### genre definitions ####
+genres = pickle.load(open('app_genres.pickle','rb'))
 
 def main():
     ################### App ####################
@@ -14,8 +16,8 @@ def main():
     st.header("Required")
     song = st.text_input("Enter a song name:")
     artist = st.text_input("Enter the artist name:")
+    genre = st.selectbox('Select a genre',genres)
     st.header("Optional")
-    genre = st.text_input("Enter a genre:")
     pl = st.text_input("Name of the new or existing playlist:")
     username = st.text_input('Enter your exact username:')
 
@@ -24,7 +26,8 @@ def main():
         f.refresh_token()
         ### check for genre ###
         if genre == "":
-            genre = f.find_genre(artist,song)
+            # genre = f.find_genre(artist,song)
+            genre = 'electronic'
         ### classify the song ###
         p_class = f.model_work(artist,song,model)
             ### get list of song ids from database ###
