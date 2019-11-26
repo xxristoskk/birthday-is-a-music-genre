@@ -10,11 +10,11 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 import pymongo
-import config
+# import config
 
 ##### Prepare the database
-# mongo_pw = os.environ['mongo_pw']
-mongo_pw = config.mongo_pw
+mongo_pw = os.environ['mongo_pw']
+# mongo_pw = config.mongo_pw
 client = pymongo.MongoClient(f'mongodb+srv://xristos:{mongo_pw}@bc01-muwwi.gcp.mongodb.net/test?retryWrites=true&w=majority')
 db = client.BC01
 artistInfo = db['artistInfo']
@@ -33,10 +33,10 @@ def refresh_token():
         sp = spotipy.Spotify(auth=token)
 
 scope = 'playlist-modify-public'
-# id = os.environ['ClientID']
-# secret = os.environ['ClientSecret']
-id = config.ClientID
-secret = config.ClientSecret
+id = os.environ['ClientID']
+secret = os.environ['ClientSecret']
+# id = config.ClientID
+# secret = config.ClientSecret
 oauth = SpotifyOAuth(client_id=id,client_secret=secret,redirect_uri='http://localhost/',scope=scope)
 token_info = oauth.get_cached_token()
 if not token_info:
