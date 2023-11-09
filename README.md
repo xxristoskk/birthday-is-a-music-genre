@@ -2,7 +2,7 @@
 
 
 ## What is this?
-Spotify has over 1,500 genre tags. One of them being "birthday" and another one being "skinhead oi." Why, or how, the latter is in their list is a subject of a completely different project. The purpose of this project is to create a music discovery tool that takes in a song and generates a playlist of x amount of songs that share its audio features. What makes this project unique from others like it, is that the generated playlist will consist of artists that are also on Bandcamp.com--one of the most popular distributors for independent artists.
+Spotify has over 1,500 genre tags. The purpose of this project is to create a music discovery tool that takes in a song and generates a playlist of x amount of songs that share its audio features. What makes this project unique from others like it, is that the generated playlist will consist of artists that are also on Bandcamp.com--one of the most popular distributors for independent artists.
 
 ## The approach
 * Scraped artist names and genre info from two blogs and the names of all artists currently on Bandcamp.com
